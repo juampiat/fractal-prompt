@@ -11,7 +11,8 @@
 
 ## 🎯 **¿Qué es FRACTAL-PROMPT?**
 
-Un **repositorio de system prompts vivientes** diseñado para mantener consistencia colaborativa entre humanos e IA en cualquier proyecto. 
+FRACTAL-PROMPT is a collaborative system prompts repository designed to maintain consistency in human-AI collaborations across any project. 
+It's a living methodology that evolved from real project experiences, focusing on honest, transparent, and effective collaboration between humans and AI.
 
 **No es magia** - es metodología probada.  
 **No es perfección** - es evolución constante.  
