@@ -1,0 +1,11 @@
+# FRACTAL-PROMPT CLI Requirements
+# Minimal dependencies for cross-platform compatibility
+
+# No external dependencies required!
+# This CLI tool runs with Python standard library only.
+
+# For future enhancements, consider adding:
+# colorama>=0.4.6      # Cross-platform colored terminal text
+# click>=8.0.0         # Command line interface creation
+# rich>=13.0.0         # Rich text and beautiful formatting
+# questionary>=1.10.0  # Interactive prompts

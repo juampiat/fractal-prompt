@@ -1,0 +1,123 @@
+{
+  "name": "fractal-prompt",
+  "displayName": "FRACTAL-PROMPT",
+  "description": "Human-AI collaboration methodology for VS Code",
+  "version": "1.0.0",
+  "publisher": "fractal-prompt",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other",
+    "Snippets",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "ai",
+    "collaboration",
+    "productivity",
+    "documentation",
+    "methodology"
+  ],
+  "activationEvents": [
+    "onCommand:fractal-prompt.init",
+    "onCommand:fractal-prompt.backup",
+    "onCommand:fractal-prompt.checkpoint",
+    "onView:fractal-prompt-sidebar"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "fractal-prompt.init",
+        "title": "FRACTAL-PROMPT: Initialize Project",
+        "category": "FRACTAL-PROMPT"
+      },
+      {
+        "command": "fractal-prompt.backup",
+        "title": "FRACTAL-PROMPT: Create Backup",
+        "category": "FRACTAL-PROMPT"
+      },
+      {
+        "command": "fractal-prompt.checkpoint",
+        "title": "FRACTAL-PROMPT: Create Collaboration Checkpoint",
+        "category": "FRACTAL-PROMPT"
+      },
+      {
+        "command": "fractal-prompt.validate",
+        "title": "FRACTAL-PROMPT: Validate Compliance",
+        "category": "FRACTAL-PROMPT"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "when": "resourceExtname == .md",
+          "command": "fractal-prompt.validate",
+          "group": "fractal-prompt"
+        }
+      ]
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "fractal-prompt-sidebar",
+          "name": "FRACTAL-PROMPT",
+          "icon": "$(lightbulb)",
+          "contextualTitle": "FRACTAL-PROMPT Collaboration"
+        }
+      ]
+    },
+    "snippets": [
+      {
+        "language": "markdown",
+        "path": "./snippets/fractal-snippets.json"
+      }
+    ],
+    "configuration": {
+      "title": "FRACTAL-PROMPT",
+      "properties": {
+        "fractal-prompt.autoBackup": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically create backups before major changes"
+        },
+        "fractal-prompt.checkpointFrequency": {
+          "type": "string",
+          "default": "daily",
+          "enum": ["hourly", "daily", "weekly", "manual"],
+          "description": "Frequency of collaboration checkpoints"
+        },
+        "fractal-prompt.templatesPath": {
+          "type": "string",
+          "default": "",
+          "description": "Custom path for FRACTAL-PROMPT templates"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "16.x",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "eslint": "^8.28.0",
+    "typescript": "^4.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/juampiat/fractal-prompt"
+  },
+  "bugs": {
+    "url": "https://github.com/juampiat/fractal-prompt/issues"
+  },
+  "homepage": "https://github.com/juampiat/fractal-prompt#readme",
+  "license": "MIT"
+}
