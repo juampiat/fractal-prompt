@@ -306,6 +306,7 @@ cp TECHNICAL/BACKUP_PROTOCOLS.md backup-strategy.md
 ### **CLI Commands:**
 ```bash
 fractal-cli init <project> [--type web|...] [--lang es|en]  # Initialize project
+fractal-cli tune <project> [--editor cursor|copilot]     # Auto-tune AI context
 fractal-cli backup <file/dir> [--name custom-name]      # Create backup
 fractal-cli status                                       # System overview
 fractal-cli validate <project-path>                      # Check compliance

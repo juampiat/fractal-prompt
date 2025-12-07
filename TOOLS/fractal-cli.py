@@ -257,6 +257,81 @@ class FractalCLI:
             print("\n⚠️  Project is missing required FRACTAL-PROMPT files")
             print("💡 Run 'fractal-cli init <project>' to set up properly")
 
+    def tune_project(self, project_path: str, editor: str = "cursor") -> None:
+        """
+        Tune the project for AI editors by injecting FRACTAL-PROMPT essence.
+        Currently supports: Cursor (.cursorrules), Github Copilot (copilot-instructions.md)
+        """
+        project_dir = Path(project_path)
+        if not project_dir.exists():
+            print(f"❌ Error: {project_path} does not exist")
+            return
+
+        print(f"🎵 Tuning project '{project_dir.name}' for {editor}...")
+
+        # 1. Detect language from config or default to es
+        lang = "es"
+        config_path = project_dir / "fractal-config.json"
+        if config_path.exists():
+            try:
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    lang = config.get("language", "es")
+            except:
+                pass
+        
+        print(f"🌍 Detected language: {lang}")
+
+        # 2. Locate Essence file
+        # es: CORE/es/ESENCIA_COLABORATIVA.md
+        # en: CORE/en/COLLABORATIVE_ESSENCE.md
+        
+        essence_file = None
+        if lang == "es":
+            essence_file = self.core_path / "es" / "ESENCIA_COLABORATIVA.md"
+        else:
+            essence_file = self.core_path / "en" / "COLLABORATIVE_ESSENCE.md"
+            
+        if not essence_file.exists():
+             # Fallback logic if structure is different
+            print(f"❌ Error: Could not find essence file at {essence_file}")
+            return
+
+        # 3. Read content
+        try:
+            with open(essence_file, 'r', encoding='utf-8') as f:
+                essence_content = f.read()
+        except Exception as e:
+            print(f"❌ Error reading essence file: {e}")
+            return
+
+        # 4. Generate Target File
+        target_file = None
+        
+        if editor.lower() == "cursor":
+            target_file = project_dir / ".cursorrules"
+            header = "# FRACTAL-PROMPT SYSTEM INSTRUCTIONS\n# This file allows Cursor to understand the project's collaborative philosophy.\n\n"
+        
+        elif editor.lower() == "copilot":
+            github_dir = project_dir / ".github"
+            github_dir.mkdir(exist_ok=True)
+            target_file = github_dir / "copilot-instructions.md"
+            header = "# FRACTAL-PROMPT INSTRUCTIONS for Github Copilot\n\n"
+            
+        else:
+            print(f"❌ Error: Unsupported editor '{editor}'. Use 'cursor' or 'copilot'.")
+            return
+
+        # Write file
+        try:
+            with open(target_file, 'w', encoding='utf-8') as f:
+                f.write(header + essence_content)
+            print(f"✅ Created: {target_file.name}")
+            print("✨ The AI editor is now tuned with FRACTAL-PROMPT essence! 🧠")
+        except Exception as e:
+            print(f"❌ Error writing target file: {e}")
+
+
 def main():
     """Main CLI entry point."""
 
@@ -267,6 +342,8 @@ def main():
 Examples:
   fractal-cli init my-project --lang es          # Initialize Spanish project
   fractal-cli init my-project --lang en          # Initialize English project
+  fractal-cli tune my-project --editor cursor    # Generate .cursorrules
+  fractal-cli tune my-project --editor copilot   # Generate copilot instructions
   fractal-cli backup ./src/                      # Create backup
   fractal-cli status                             # Show system status
   fractal-cli validate ./my-project/             # Validate project compliance
@@ -284,6 +361,13 @@ Examples:
     init_parser.add_argument("--lang", default="es",
                            choices=["es", "en"],
                            help="Language for templates (default: es)")
+
+    # Tune command
+    tune_parser = subparsers.add_parser("tune", help="Tune project for AI editors (Context Injection)")
+    tune_parser.add_argument("project_path", help="Path to the project to tune")
+    tune_parser.add_argument("--editor", default="cursor",
+                           choices=["cursor", "copilot"],
+                           help="Target AI editor (default: cursor)")
 
     # Backup command
     backup_parser = subparsers.add_parser("backup", help="Create backup following FRACTAL-PROMPT protocols")
@@ -307,6 +391,8 @@ Examples:
 
     if args.command == "init":
         cli.init_project(args.project_name, args.type, args.lang)
+    elif args.command == "tune":
+        cli.tune_project(args.project_path, args.editor)
     elif args.command == "backup":
         cli.create_backup(args.target, args.name)
     elif args.command == "status":
