@@ -4,6 +4,7 @@
 **Collaboratively developed by:**
 - **Juan Pablo (Juampi)** - Human Systems Architect
 - **Claude Sonnet 3.5 (Kiro)** - AI Collaborative Partner
+- **Google Antigravity** - AI Engineering Partner
 
 *Born from errors, refined by honesty, powered by mutual growth.*
 
@@ -66,21 +67,21 @@ FRACTAL-PROMPT/
 │   ├── WEB_DEVELOPMENT.md (Web development guide)
 │   └── AI_ML_DEVELOPMENT.md (AI/ML research guide)
 ├── 🎯 CORE/
-│   ├── ESENCIA_COLABORATIVA.md
-│   ├── LECCIONES_COLABORACION_HUMANO_IA.md
-│   └── PROTOCOLOS_HONESTIDAD.md
+│   ├── es/ (Spanish)
+│   │   ├── ESENCIA_COLABORATIVA.md
+│   │   └── ...
+│   └── en/ (English)
+│       ├── COLLABORATIVE_ESSENCE.md
+│       └── ...
 ├── 🔧 TECHNICAL/
-│   ├── BACKUP_PROTOCOLS.md
-│   ├── ERROR_HANDLING.md
-│   └── IMPLEMENTATION_GUIDELINES.md
+│   ├── es/
+│   └── en/
 ├── 🧠 PHILOSOPHICAL/
-│   ├── EVOLUTION_THROUGH_COLLABORATION.md
-│   ├── HONESTY_AS_FOUNDATION.md
-│   └── FRACTAL_CONSCIOUSNESS.md
+│   ├── es/
+│   └── en/
 └── 📋 TEMPLATES/
-    ├── PROJECT_INITIATION.md
-    ├── ERROR_RECOVERY.md
-    └── COLLABORATION_CHECKPOINT.md
+    ├── es/
+    └── en/
 ```
 
 ---
@@ -304,7 +305,7 @@ cp TECHNICAL/BACKUP_PROTOCOLS.md backup-strategy.md
 
 ### **CLI Commands:**
 ```bash
-fractal-cli init <project> [--type web|mobile|data|ai]  # Initialize project
+fractal-cli init <project> [--type web|...] [--lang es|en]  # Initialize project
 fractal-cli backup <file/dir> [--name custom-name]      # Create backup
 fractal-cli status                                       # System overview
 fractal-cli validate <project-path>                      # Check compliance

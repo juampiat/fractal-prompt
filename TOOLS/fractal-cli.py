@@ -12,8 +12,14 @@ import os
 import shutil
 import json
 import datetime
+import sys
+import io
 from pathlib import Path
 from typing import Dict, List, Optional
+
+# Force UTF-8 output for emojis on Windows
+if sys.stdout.encoding.lower() != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 class FractalCLI:
     """CLI tool for FRACTAL-PROMPT project management."""
@@ -24,38 +30,77 @@ class FractalCLI:
         self.core_path = self.base_path / "CORE"
         self.technical_path = self.base_path / "TECHNICAL"
 
-    def init_project(self, project_name: str, project_type: str = "general") -> None:
+    def _get_files_to_copy(self, lang: str) -> List[Dict[str, Path]]:
+        """Get list of files to copy based on language."""
+        
+        # Check if language directory exists for each section
+        sections = {
+            "CORE": self.core_path,
+            "TECHNICAL": self.technical_path,
+            "TEMPLATES": self.templates_path
+        }
+        
+        files_to_copy = []
+        
+        for section_name, section_path in sections.items():
+            lang_path = section_path / lang
+            if not lang_path.exists():
+                print(f"⚠️  Warning: No content found for language '{lang}' in {section_name}")
+                continue
+                
+            # Iterate through files in the language directory
+            for item in lang_path.iterdir():
+                if item.is_file() and item.suffix == '.md':
+                    # We will copy it to the project root or similar structure
+                    # Strategy: Preserve original category? Or flat? 
+                    # Original script copied distinct paths to distinct inputs.
+                    # Let's keep the structure: Project/Category/File
+                    files_to_copy.append({
+                        "src": item,
+                        "rel_path": f"{section_name}/{item.name}"
+                    })
+                    
+        return files_to_copy
+
+    def init_project(self, project_name: str, project_type: str = "general", lang: str = "es") -> None:
         """Initialize a new project with FRACTAL-PROMPT templates."""
 
         print(f"🚀 Initializing FRACTAL-PROMPT project: {project_name}")
+        print(f"🌍 Language: {lang}")
 
         # Create project directory
         project_dir = Path(project_name)
         project_dir.mkdir(exist_ok=True)
+        
+        # Create subdirectories in project
+        for subdir in ["CORE", "TECHNICAL", "TEMPLATES"]:
+            (project_dir / subdir).mkdir(exist_ok=True)
 
-        # Copy core templates
-        templates_to_copy = [
-            "TEMPLATES/PROJECT_INITIATION.md",
-            "TEMPLATES/COLLABORATION_CHECKPOINT.md",
-            "TEMPLATES/ERROR_RECOVERY.md",
-            "CORE/ESENCIA_COLABORATIVA.md",
-            "TECHNICAL/IMPLEMENTATION_GUIDELINES.md"
-        ]
+        # Get files to copy
+        files = self._get_files_to_copy(lang)
+        
+        if not files:
+            print(f"❌ Error: No templates found for language '{lang}'")
+            return
 
-        for template in templates_to_copy:
-            src = self.base_path / template
-            if src.exists():
-                dst = project_dir / src.name
-                shutil.copy2(src, dst)
-                print(f"✅ Copied: {src.name}")
+        copied_count = 0
+        for file_info in files:
+            src = file_info["src"]
+            rel_path = file_info["rel_path"] # e.g. CORE/ESENCIA_COLABORATIVA.md
+            dst = project_dir / rel_path
+            
+            shutil.copy2(src, dst)
+            print(f"✅ Copied: {rel_path}")
+            copied_count += 1
 
         # Create project configuration
         config = {
             "project_name": project_name,
             "created_date": str(datetime.datetime.now()),
-            "fractal_version": "1.0",
+            "fractal_version": "1.1",
             "project_type": project_type,
-            "templates_used": [t.split('/')[-1] for t in templates_to_copy]
+            "language": lang,
+            "templates_count": copied_count
         }
 
         with open(project_dir / "fractal-config.json", 'w', encoding='utf-8') as f:
@@ -65,9 +110,15 @@ class FractalCLI:
         print(f"\n🎯 Project '{project_name}' initialized successfully!")
         print(f"📁 Location: {project_dir.absolute()}")
         print("\n📋 Next steps:")
-        print("1. Edit PROJECT_INITIATION.md with your project details")
-        print("2. Read ESENCIA_COLABORATIVA.md to understand the collaborative spirit")
-        print("3. Set up backup protocols using IMPLEMENTATION_GUIDELINES.md")
+        
+        if lang == "es":
+            print("1. Edita TEMPLATES/PROJECT_INITIATION.md con los detalles de tu proyecto")
+            print("2. Lee CORE/ESENCIA_COLABORATIVA.md para entender el espíritu colaborativo")
+            print("3. Configura protocolos de backup usando TECHNICAL/BACKUP_PROTOCOLS.md")
+        else:
+            print("1. Edit TEMPLATES/PROJECT_INITIATION.md with your project details")
+            print("2. Read CORE/COLLABORATIVE_ESSENCE.md to understand the collaborative spirit")
+            print("3. Set up backup protocols using TECHNICAL/BACKUP_PROTOCOLS.md")
 
     def create_backup(self, target_path: str, backup_name: Optional[str] = None) -> None:
         """Create a backup following FRACTAL-PROMPT protocols."""
@@ -121,26 +172,21 @@ class FractalCLI:
 
         print("🌟 FRACTAL-PROMPT System Status")
         print("=" * 40)
+        
+        # Determine available languages
+        available_langs = []
+        for lang_dir in self.core_path.iterdir():
+            if lang_dir.is_dir():
+                available_langs.append(lang_dir.name)
 
-        # Check core files
-        core_files = [
-            "README.md",
-            "CORE/ESENCIA_COLABORATIVA.md",
-            "TECHNICAL/IMPLEMENTATION_GUIDELINES.md"
-        ]
+        print(f"\n🌍 Available Languages: {', '.join(available_langs)}")
 
-        print("\n📋 Core Files:")
-        for file in core_files:
-            path = self.base_path / file
-            status = "✅" if path.exists() else "❌"
-            print(f"  {status} {file}")
-
-        # Check templates
-        print("\n📋 Templates:")
-        if self.templates_path.exists():
-            for template in self.templates_path.iterdir():
-                if template.is_file() and template.suffix == ".md":
-                    print(f"  ✅ {template.name}")
+        # Check templates for each language
+        for lang in available_langs:
+            print(f"\n📋 Templates ({lang}):")
+            files = self._get_files_to_copy(lang)
+            for f in files:
+                print(f"  ✅ {f['rel_path']}")
 
         # Show recent backups
         backup_dir = Path("backups")
@@ -155,7 +201,7 @@ class FractalCLI:
             except (FileNotFoundError, json.JSONDecodeError):
                 print("  No backup logs found")
 
-        print(f"\n🏗️  FRACTAL-PROMPT v1.0 - Ready for collaboration! 🤝")
+        print(f"\n🏗️  FRACTAL-PROMPT v1.1 - Ready for collaboration! 🤝")
 
     def validate_collaboration(self, project_path: str) -> None:
         """Validate that a project follows FRACTAL-PROMPT protocols."""
@@ -165,11 +211,10 @@ class FractalCLI:
             print(f"❌ Error: {project_path} does not exist")
             return
 
-        print(f"🔍 Validating FRACTAL-PROMPT compliance for: {project_name}")
+        print(f"🔍 Validating FRACTAL-PROMPT compliance for: {project_dir.name}")
 
         # Check required files
         required_files = [
-            "PROJECT_INITIATION.md",
             "fractal-config.json"
         ]
 
@@ -181,18 +226,30 @@ class FractalCLI:
             print(f"  {status} {file}")
             if not path.exists():
                 all_present = False
-
-        # Check core templates
-        core_templates = [
-            "ESENCIA_COLABORATIVA.md",
-            "IMPLEMENTATION_GUIDELINES.md"
-        ]
-
-        print("\n📋 Core Templates:")
-        for template in core_templates:
-            path = project_dir / template
-            status = "✅" if path.exists() else "⚠️ "
-            print(f"  {status} {template}")
+                
+        # Try to detect language from config
+        lang = "es" # default
+        config_path = project_dir / "fractal-config.json"
+        if config_path.exists():
+            try:
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    lang = config.get("language", "es")
+            except:
+                pass
+        
+        # Check core templates based on language (heuristic)
+        # We check if at least ONE file from each category exists
+        categories = ["CORE", "TECHNICAL"]
+        
+        print(f"\n📋 Content Structure ({lang}):")
+        for cat in categories:
+            cat_dir = project_dir / cat
+            if cat_dir.exists() and any(cat_dir.iterdir()):
+                print(f"  ✅ {cat}/ (contains files)")
+            else:
+                print(f"  ⚠️ {cat}/ (empty or missing)")
+                # Not strictly failing if partial, but warning
 
         if all_present:
             print("\n🎉 Project is FRACTAL-PROMPT compliant!")
@@ -208,11 +265,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  fractal-cli init my-project                    # Initialize new project
-  fractal-cli init my-project --type web        # Initialize web project
-  fractal-cli backup ./src/                     # Create backup
-  fractal-cli status                            # Show system status
-  fractal-cli validate ./my-project/            # Validate project compliance
+  fractal-cli init my-project --lang es          # Initialize Spanish project
+  fractal-cli init my-project --lang en          # Initialize English project
+  fractal-cli backup ./src/                      # Create backup
+  fractal-cli status                             # Show system status
+  fractal-cli validate ./my-project/             # Validate project compliance
         """
     )
 
@@ -224,6 +281,9 @@ Examples:
     init_parser.add_argument("--type", default="general",
                            choices=["general", "web", "mobile", "data", "ai"],
                            help="Type of project (default: general)")
+    init_parser.add_argument("--lang", default="es",
+                           choices=["es", "en"],
+                           help="Language for templates (default: es)")
 
     # Backup command
     backup_parser = subparsers.add_parser("backup", help="Create backup following FRACTAL-PROMPT protocols")
@@ -246,7 +306,7 @@ Examples:
     cli = FractalCLI()
 
     if args.command == "init":
-        cli.init_project(args.project_name, args.type)
+        cli.init_project(args.project_name, args.type, args.lang)
     elif args.command == "backup":
         cli.create_backup(args.target, args.name)
     elif args.command == "status":
